@@ -1,6 +1,6 @@
 
 import  express  from "express";
-import { protect } from "../middlewares/authmiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 import { getActivity } from "../controllers/ActivityControllers.js";
 
 

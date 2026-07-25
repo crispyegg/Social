@@ -1,6 +1,6 @@
 
 import { Response } from "express";
-import { Authrequest } from "../middlewares/authmiddleware.js";
+import { Authrequest } from "../middlewares/authMiddleware.js";
 import { ActivityLog } from "../models/ActivityLog.js";
 
 

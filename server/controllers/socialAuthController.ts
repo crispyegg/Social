@@ -1,13 +1,13 @@
 
 
-import { Request, Response } from "express";
+import {  Response } from "express";
 import zernio from "../config/zernio.js";
 
 import { User } from "../models/user.js";
-import { error } from "node:console";
+;
 import { Account } from "../models/Account.js";
-import { connected } from "node:process";
-import { Authrequest } from "../middlewares/authmiddleware.js";
+
+import { Authrequest } from "../middlewares/authMiddleware.js";
 
 //helper getor createZernio profile
 
@@ -64,12 +64,15 @@ export const generateAuthUrl =async (req:Authrequest,res:Response):Promise<void>
         profileId,
         redirect_url: redirectUrl
       }
+      
     })
+    
 
     const data = result.data as any;
+    
 
     console.log("Get connect url Response", JSON.stringify(data,null,2));
-
+    
     const authUrl = data.authUrl;
 
     if(!authUrl){

@@ -17,7 +17,7 @@ export const protect = async (req:Authrequest ,res:Response,next:NextFunction) =
       req.user = await User.findById(decoded.id).select("-password") 
       next()
     } catch (error:any) {
-     res.status(401).json({message:error?.messahe || "Not authorizrd,token failed"})
+     res.status(401).json({message:error?.message || "Not authorizrd,token failed"})
     }
   }else{
     res.status(401).json({message: "Not authorizred,No token"})

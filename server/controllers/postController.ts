@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-import { Authrequest } from "../middlewares/authmiddleware.js";
+import { Authrequest } from "../middlewares/authMiddleware.js";
 
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
@@ -26,7 +26,7 @@ const pollLeonardoJob =async (generationId:string,apiKey:string):Promise<string>
 
       const generation = response.data.generation_by_pk;
       if(generation.status==="COMPLETE"){
-        if(generation.generated_images && generation.generated_images.lenght>0){
+        if(generation.generated_images && generation.generated_images.length>0){
           return generation.generated_images[0].url
         }
         throw new Error("Generation completed but no images found.")
@@ -57,8 +57,8 @@ export const generatePost = async (req:Authrequest,res:Response):Promise<void> =
     }
     const ai = new GoogleGenAI({apiKey});
  //generate test
-     const textResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    const textResponse = await ai.models.generateContent({
+   model: "gemini-3.6-flash",
     contents: `Genarate a social media post based on this prompt:"${prompt}". Tone:${tone}.
      Inculde relevant hashtags.
      Format the response as JSON with "content" and "imagePrompt" fields.
@@ -117,7 +117,7 @@ export const generatePost = async (req:Authrequest,res:Response):Promise<void> =
         mediaUrl = uploadResult.secure_url;
       }
     } catch (err:any) {
-      console.error("image generatio failed:",err);
+      console.error("image generation failed:",err);
       
     }
    }
@@ -189,24 +189,30 @@ export const scheduelePost= async (req:Authrequest,res:Response):Promise<void> =
      let mediaType: "image"|"video"|undefined =req.body.mediaType;
 
      if(req.file){
-      const result = await new Promise<any>((resolve,reject)=>{
-        const stream = cloudinary.uploader.upload_stream({resource_type:"auto",
-          folder:"social-scheduler"
-        },(error,result)=>{
-          if(error) reject(error);
-          else resolve(result)
-        });
-        stream.end(req.file!.buffer);
 
-      })
-      mediaUrl = result.secure_url;
-      mediaType = result.resource_type === "video"?'video':'image'
-     }
+  console.log("Uploading file:", req.file.originalname);
+
+  const result = await cloudinary.uploader.upload(
+    `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+    {
+      folder: "social-scheduler",
+      resource_type: "auto"
+    }
+  );
+
+  console.log("CLOUDINARY UPLOAD SUCCESS:", result);
+
+  mediaUrl = result.secure_url;
+
+  mediaType = result.resource_type === "video"
+    ? "video"
+    : "image";
+}
 
      const post = await Post.create({
       user:req.user._id,
       content,
-      platform:parsedPlatforms,
+      platforms:parsedPlatforms,
       mediaUrl,
       mediaType,
       scheduledFor,

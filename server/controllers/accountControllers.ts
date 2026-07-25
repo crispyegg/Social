@@ -1,4 +1,4 @@
-import { Authrequest } from "../middlewares/authmiddleware.js";
+import { Authrequest } from "../middlewares/authMiddleware.js";
 import { Response } from "express";
 import { Account } from "../models/Account.js";
 import zernio from "../config/zernio.js";

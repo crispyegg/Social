@@ -2,9 +2,9 @@
 import cron from "node-cron";
 import { Post } from "../models/Post.js";
 import { Account } from "../models/Account.js";
-import { log } from "console";
 import zernio from "../config/zernio.js";
 import { ActivityLog } from "../models/ActivityLog.js";
+
 
 
 export const initScheduler = ()=> {
@@ -17,7 +17,7 @@ export const initScheduler = ()=> {
         try {
           const accounts = await Account.find({
             user:post.user,
-            platform:{$in:post.platform},
+            platform:{$in:post.platforms},
             status:"connected",
             zernioAccountId:{$exists:true}
           })
@@ -27,7 +27,7 @@ export const initScheduler = ()=> {
             continue;
           }
           const zernioPlatforms = accounts.map((acc)=>({
-            tform : acc.platform as any,
+            platform : acc.platform as any,
             accountId: acc.zernioAccountId!
           }))
           const payload = {

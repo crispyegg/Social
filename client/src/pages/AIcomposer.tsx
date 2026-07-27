@@ -71,12 +71,13 @@ const AIcomposer = () => {
    setScheduling(true);
     try {
       await api.post("/api/posts",{
-        content:activeScheduler.content,
-        mediaUrl:activeScheduler.mediaUrl,
-        mediaType:activeScheduler.mediaType,
-        platform:selelctedPlatforms,
-        status:"scheduled"
-      })
+  content: activeScheduler.content,
+  mediaUrl: activeScheduler.mediaUrl,
+  mediaType: activeScheduler.mediaType,
+  platforms: selelctedPlatforms,
+  scheduledFor: scheduledFor,
+  status:"scheduled"
+})
       toast.success("AI Post scheduled!")
       setActiveScheduler(null)
       setSelectedPlatforms([])

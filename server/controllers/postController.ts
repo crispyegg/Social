@@ -1,47 +1,13 @@
 import { Response } from "express";
-
 import { Authrequest } from "../middlewares/authMiddleware.js";
-
 import { GoogleGenAI } from "@google/genai";
-import axios from "axios";
 import { cloudinary } from "../config/cloudinary.js";
-
 import { Generation } from "../models/Generation.js";
 import { Post } from "../models/Post.js";
+import { InferenceClient } from "@huggingface/inference";
 
-//helper to poll leonardo.ai
 
-const pollLeonardoJob =async (generationId:string,apiKey:string):Promise<string> => {
-  const maxRetries = 20;
-  const delay = 5000;
 
-  for(let i= 0; i< maxRetries ; i++){
-    try {
-      const response = await axios.get(`https://cloud.leonardo.ai/api/rest/v2/generations/${generationId}`,{
-        headers:{
-          accept:"application/json",
-         authorization:`Bearer ${apiKey}`,
-        }
-      })
-
-      const generation = response.data.generation_by_pk;
-      if(generation.status==="COMPLETE"){
-        if(generation.generated_images && generation.generated_images.length>0){
-          return generation.generated_images[0].url
-        }
-        throw new Error("Generation completed but no images found.")
-      }
-      if(generation.status === "FAILED"){
-        throw new Error("Generation complete but no images found.")
-      }
-    } catch (err:any) {
-      console.error("polling error:" ,err?.response?.data||err.message);
-      
-    }
-    await new Promise((resolve)=> setTimeout(resolve,delay))
-  }
-  throw new Error(" Leonardo.ai generation timed out.")
-} 
 
 //generate post
 //POST/api/generate
@@ -55,7 +21,9 @@ export const generatePost = async (req:Authrequest,res:Response):Promise<void> =
       res.status(400).json({message:"Gemini API Key is missing. PLease add it to your server/.env file"});
       return;
     }
-    const ai = new GoogleGenAI({apiKey});
+    const ai = new GoogleGenAI({
+  apiKey: apiKey
+});
  //generate test
     const textResponse = await ai.models.generateContent({
    model: "gemini-3.6-flash",
@@ -76,51 +44,68 @@ export const generatePost = async (req:Authrequest,res:Response):Promise<void> =
    } catch (error) {
      content = textResponse.text ||""
    }
-   let mediaUrl=""
-   if(generateImage){
-    try {
-      const leonardoKey = process.env.LEONARDO_API_KEY
-      if(leonardoKey){
-        //use LEonardo.ai for image generation
 
-        const leoResponse = await axios.post(
-          "https://cloud.leonardo.ai/api/rest/v2/generations",
-          {
-            "public": false,
-            "model": "gpt-image-1.5",
-           "parameters":{
-           "quality": "LOW",
-           "prompt": imagePrompt,
-           "quantity": 1,
-           "width": 1024,
-           "height": 1024,
-           "prompt_enhance": "OFF"
-       }
-          },{
-            headers:{
-              accept:"application/json",
-              authorization:`Bearer ${leonardoKey}`,
-              "Content-type": "application/json",
-            }
-          }
-        )
 
-        const generationId = leoResponse.data.generate.generationId;
- 
-        const tempUrl = await pollLeonardoJob(generationId,leonardoKey);
+ let mediaUrl = "";
 
-        //upload to cloundinary for persistence 
+if(generateImage){
 
-        const uploadResult = await cloudinary.uploader.upload(tempUrl,{
-          folder:"a-generations"
-        });
-        mediaUrl = uploadResult.secure_url;
+  try {
+
+    console.log("Generating image using Hugging Face...");
+
+
+    const client = new InferenceClient(
+  process.env.HUGGINGFACE_API_KEY
+    );
+
+    const image = await client.textToImage({
+
+      provider: "nscale",
+
+      model: "black-forest-labs/FLUX.1-schnell",
+
+      inputs: imagePrompt,
+
+      parameters:{
+        num_inference_steps:5
       }
-    } catch (err:any) {
-      console.error("image generation failed:",err);
-      
-    }
-   }
+
+    });
+
+
+    const arrayBuffer = await image.arrayBuffer();
+
+    const buffer = Buffer.from(arrayBuffer);
+
+
+    const uploadResult =
+      await cloudinary.uploader.upload(
+        `data:image/png;base64,${buffer.toString("base64")}`,
+        {
+          folder:"a-generations"
+        }
+      );
+
+
+    mediaUrl = uploadResult.secure_url;
+
+
+    console.log(
+      "Hugging Face image uploaded:",
+      mediaUrl
+    );
+
+
+  } catch(err:any){
+
+    console.error(
+      "Hugging Face image generation failed:",
+      err.message
+    );
+
+}
+}
 
    //save generation to DB
      const generation = await Generation.create({

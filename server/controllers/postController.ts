@@ -59,7 +59,7 @@ if(generateImage){
   process.env.HUGGINGFACE_API_KEY
     );
 
-    const image:any= await client.textToImage({
+    const image = await client.textToImage({
 
       provider: "nscale",
 

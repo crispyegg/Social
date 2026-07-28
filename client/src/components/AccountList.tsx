@@ -2,14 +2,14 @@ import { AlertCircleIcon, CheckCircleIcon, PlusIcon, UnplugIcon } from "lucide-r
 import { PLATFORMS } from "../assets/assets";
 
 interface AccountListProps {
-  accounts :any [];
+  accounts :any[];
   onDisconnect:(accountId:string)=> Promise<void>
 }
 
 const AccountList = ({accounts,onDisconnect}: AccountListProps) => {
 
   const handleDisconnect = async (accountId:string) => {
-    const confirm = window.confirm("Are you sure you want to discoonect this account?")
+    const confirm = window.confirm("Are you sure you want to disconnect this account?")
     if(!confirm) return;
     await onDisconnect(accountId)
   }
@@ -28,15 +28,15 @@ const AccountList = ({accounts,onDisconnect}: AccountListProps) => {
     )
   }
   return (
-    <div className="grid grid-cols-4 sm:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {
           accounts.map((account,index)=>{
             const meta = PLATFORMS.find((p)=>p.id === account.platform)
             if(!meta) return null;
             return (
-              <div key={index} className="group bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 hover:border-slate-300 transition-all">
+              <div key={index} className="group bg-white border border-slate-200 rounded-2xl p-6 flex items-center gap-4 hover:border-slate-300 transition-all">
                   <div>
-                     <meta.icon className="sixe text-slate-500"/>
+                     <meta.icon className="size text-slate-500"/>
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -62,7 +62,7 @@ const AccountList = ({accounts,onDisconnect}: AccountListProps) => {
                   </div>
 
                   <button onClick={()=>handleDisconnect(account._id)} title='Disconnect account'className="ml-2 p-1.5 rounded-lg text-slate-300 group-hover:text-red-500 transition-all">
-                    <UnplugIcon className="sixe-4"/>
+                    <UnplugIcon className="size-4"/>
                   </button>
               </div>
             )

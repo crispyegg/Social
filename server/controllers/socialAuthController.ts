@@ -59,13 +59,7 @@ export const generateAuthUrl =async (req:Authrequest,res:Response):Promise<void>
     const redirectUrl = `${origin}/accounts`
 
 
-    console.log("========== OAUTH DEBUG ==========");
-console.log("Origin:", origin);
-console.log("Host:", req.headers.host);
-console.log("Referer:", req.headers.referer);
-console.log("Redirect URL:", redirectUrl);
-console.log("Platform:", req.params.platform);
-console.log("================================");
+ 
 
     const result = await zernio.connect.getConnectUrl({
       path:{platform : platform as any},

@@ -44,7 +44,7 @@ const AIcomposer = () => {
    }
    setLoading(true)
    try {
-    const {data}  = await api.post("api/posts/generate",{prompt,tone,generateImage})
+    const {data}  = await api.post("/api/posts/generate",{prompt,tone,generateImage})
 
     setGenerations([data,...generations])
     setActiveScheduler(data)

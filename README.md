@@ -239,7 +239,7 @@ VITE_API_BASE_URL=
 Backend
 
 ```bash
-npm run dev
+npm run server
 ```
 
 Frontend
